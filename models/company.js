@@ -61,6 +61,33 @@ class Company {
     return companiesRes.rows;
   }
 
+  static async findWithFilter(body){
+    const {name, min, max} = body;
+    let betwean = ''
+    let arr = [`%${name}%`]
+    if(min !== '' && max !== ''){
+      if(min < max){
+        betwean = `AND num_employees BETWEEN $2 AND $3`
+        arr.push(min, max)
+      }else{
+        throw new BadRequestError("The Minimum number is greater then the Maximum")
+      }
+    }
+    const companies = await db.query(
+      `SELECT handle,
+              name,
+              description,
+              num_employees AS "numEmployees",
+              logo_url AS "logoUrl"
+      FROM companies
+      WHERE name ILIKE $1 ${betwean}
+      ORDER BY name
+      `, arr )
+      
+      return companies.rows;
+    
+  }
+
   /** Given a company handle, return data about company.
    *
    * Returns { handle, name, description, numEmployees, logoUrl, jobs }
