@@ -52,11 +52,12 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    console.log(req.query.name)
+    // if no query is provided show all companies
     if(Object.keys(req.query).length === 0){
       const companies = await Company.findAll();
       return res.json({ companies });
     }
+    //if query is provided use data to filter companies
     const companies = await Company.findWithFilter(req.query);
     return res.json({ companies });
   } catch (err) {
