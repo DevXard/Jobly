@@ -10,37 +10,48 @@ class Jobs {
      * data should be {title, salary, equity, company_handle}
      * Return should be {title, salary, equity, company_handle}
      */
-    static async create ({title, salary, equity, company_handle}){
+    static async create (body){
+        const {title, salary, equity, company_handle} = body;
+        
         const result = await db.query(`
             INSERT INTO jobs
             (title, salary, equity, company_handle)
             VALUES 
             ($1, $2, $3, $4)
-            RETURNING title, salary, equity, company_handle
+            RETURNING id, title, salary, equity, company_handle
         `, [title, salary, equity, company_handle])
-
+        
         return result.rows[0];
     }
 
+    // get all jobs 
+    // returns array with all jobs
     static async findAll (){
        const result = await db.query(`
             SELECT title, salary, equity, company_handle
             FROM jobs
-            ORDER BY title
             `)
 
-        return result.rows[0]
+        return result.rows
     }
 
+    //get job by id return [title, salary, equity, company_handle]
+    // if not found throw  NotFoundError
     static async get(id) {
         const result = await db.query(`
             SELECT title, salary, equity, company_handle
             FROM jobs
             WHERE id = $1
         `, [id])
-        return result[0]
+        if(!result.rows[0]) throw new NotFoundError('Job not found')
+        
+        return result.rows[0]
     }
 
+    // UPDATE a specific job returns new data
+    // bodyData [title, salary, equity, company_handle]
+    // returns new [title, salary, equity, company_handle]
+    // if the job is not found throw  NotFoundError
     static async update(id, bodyData){
         const { setCols, values } = sqlForPartialUpdate(
             bodyData,
@@ -56,17 +67,21 @@ class Jobs {
         const result = await db.query(queryString, [...values, id])
 
         if(!result.rows[0]) throw new NotFoundError('Job does not exsist')
-        
+
         return result.rows[0]
     }
 
+    // DELETE a specific job and return undefined
+    // if companie does not exist throw new NotFoundError
     static async remove(id){
         const result = await db.query(`
             DELETE 
             FROM jobs
             WHERE id = $1
             RETURNING id
-        `)
+        `, [id])
         if(!result.rows[0]) throw new NotFoundError('No Job with that id was found')
     }
 }
+
+module.exports = Jobs;
