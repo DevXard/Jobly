@@ -6,7 +6,7 @@ const jsonschema = require("jsonschema");
 const express = require("express");
 
 const { BadRequestError } = require("../expressError");
-const { ensureLoggedIn } = require("../middleware/auth");
+const { ensureLoggedIn, ensureLoggedInAndAdminOrUser } = require("../middleware/auth");
 const Jobs = require("../models/jobs");
 
 const jobsNewSchema = require("../schemas/jobsNew.json");
@@ -37,7 +37,7 @@ router.get("/", async (req, res, next) => {
  *
  * Authorization required: login
  */
-router.post("/", async (req, res, next) => {
+router.post("/", ensureLoggedIn, async (req, res, next) => {
     try{
         const validator = jsonschema.validate(req.body, jobsNewSchema);
         if(!validator.valid){
@@ -45,7 +45,7 @@ router.post("/", async (req, res, next) => {
             throw new BadRequestError(errs);
         }
         const job = await Jobs.create(req.body)
-        return res.json({job})
+        return res.status(201).json({job})
     }catch(err) {
         return next(err);
     }
@@ -58,7 +58,7 @@ router.post("/", async (req, res, next) => {
  *
  * Authorization required: none
  */
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", ensureLoggedIn, async (req, res, next) => {
     try{
         
         const job = await Jobs.get(req.params.id)
@@ -78,7 +78,7 @@ router.get("/:id", async (req, res, next) => {
  *
  * Authorization required: login
  */
-router.patch("/:id", async (req, res, next) => {
+router.patch("/:id", ensureLoggedInAndAdminOrUser, async (req, res, next) => {
     try {
         const validator = jsonschema.validate(req.body, jobUpdateSchema)
         if(!validator.valid){
@@ -88,7 +88,7 @@ router.patch("/:id", async (req, res, next) => {
         const job = await Jobs.update(req.params.id, req.body)
         return res.json({job})
     }catch(err) {
-        next(err);
+        return next(err);
     }
 })
 
@@ -96,7 +96,7 @@ router.patch("/:id", async (req, res, next) => {
  *
  * Authorization: login 
  */
-router.delete('/:id', async(req, res, next) => {
+router.delete('/:id', ensureLoggedInAndAdminOrUser, async(req, res, next) => {
     try{
         const job = await Jobs.remove(req.params.id)
         return res.json({msg: "DELETED"})

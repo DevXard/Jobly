@@ -46,18 +46,21 @@ describe("FindAll Job postings", () => {
         
         expect(jobs).toEqual([
             {
+              id: expect.any(Number),
               title: 'Conservator, furniture',
               salary: 110000,
               equity: '0',
               company_handle: 'c1'
             },
             {
+              id: expect.any(Number),
               title: 'Information officer',
               salary: 200000,
               equity: '0',
               company_handle: 'c1'
             },
             {
+              id: expect.any(Number),
               title: 'Consulting civil engineer',
               salary: 60000,
               equity: '0',
