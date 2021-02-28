@@ -28,7 +28,7 @@ class Jobs {
     // returns array with all jobs
     static async findAll (){
        const result = await db.query(`
-            SELECT title, salary, equity, company_handle
+            SELECT id, title, salary, equity, company_handle
             FROM jobs
             `)
 
