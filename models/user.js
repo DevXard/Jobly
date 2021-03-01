@@ -142,6 +142,17 @@ class User {
     return user;
   }
 
+  static async apply(username, jobId) {
+    
+    const result = await db.query(`
+      INSERT INTO applications
+      (username, job_id)
+      VALUES
+      ($1, $2)
+    `, [username, jobId])
+    return {application: "Succesful"}
+  }
+
   /** Update user data with `data`.
    *
    * This is a "partial update" --- it's fine if data doesn't contain

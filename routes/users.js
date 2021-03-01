@@ -78,6 +78,14 @@ router.get("/:username", ensureLoggedInAndAdminOrUser, async function (req, res,
   }
 });
 
+router.post("/:username/jobs/:id", async (req, res, next) => {
+  try {
+    const user = await User.apply(req.params.username, req.params.id)
+    return res.json(user);
+  }catch (err) {
+    return next(err);
+  }
+})
 
 /** PATCH /[username] { user } => { user }
  *
