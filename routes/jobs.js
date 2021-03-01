@@ -22,7 +22,11 @@ const router = new express.Router();
  
 router.get("/", async (req, res, next) => {
     try{
-        const jobs = await Jobs.findAll()
+        if(Object.keys(req.query).length === 0){
+            const jobs = await Jobs.findAll()
+            return res.json({jobs})
+          }
+        const jobs = await Jobs.getWithFilter(req.query)
         return res.json({jobs})
     }catch(err) {
         return next(err);

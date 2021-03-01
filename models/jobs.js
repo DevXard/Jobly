@@ -48,6 +48,16 @@ class Jobs {
         return result.rows[0]
     }
 
+    static async getWithFilter(body){
+        const {str, values} = getFilter(body);
+        
+        const jobs = await db.query(`
+            SELECT * FROM jobs
+            WHERE ${str}
+        `, values)
+        return jobs.rows
+    }
+
     // UPDATE a specific job returns new data
     // bodyData [title, salary, equity, company_handle]
     // returns new [title, salary, equity, company_handle]

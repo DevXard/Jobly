@@ -1,6 +1,7 @@
 "use strict";
 
 const db = require("../db");
+const Jobs = require("./jobs")
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate, getFilter } = require("../helpers/sql");
 
@@ -73,7 +74,8 @@ class Company {
     
     // create string for the WHERE condition
     // and array with all the values
-    let {string, arr} = getFilter(body)
+    let {str, values} = getFilter(body)
+    
     
     const companies = await db.query(
       `SELECT handle,
@@ -82,9 +84,9 @@ class Company {
               num_employees AS "numEmployees",
               logo_url AS "logoUrl"
       FROM companies
-      WHERE ${string}
+      WHERE ${str}
       ORDER BY name
-      `, arr )
+      `, values )
       
       return companies.rows;
     
@@ -105,13 +107,18 @@ class Company {
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies
+           FROM companies AS c
+           JOIN jobs AS j ON c.handle = j.company_handle
            WHERE handle = $1`,
         [handle]);
 
     const company = companyRes.rows[0];
-
+    const jobs = await Jobs.getWithFilter({company_handle: `%${company.handle}%`})
     if (!company) throw new NotFoundError(`No company: ${handle}`);
+    
+    
+    const companyJobs = jobs.map(e => ({id: e.id, title:e.title, salary:e.salary, equity:e.equity, company_handle:e.company_handle}))
+     company.jobs = companyJobs
 
     return company;
   }

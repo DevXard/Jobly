@@ -8,6 +8,8 @@ const express = require("express");
 const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
+const Jobs = require("../models/jobs");
+
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -32,7 +34,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
       throw new BadRequestError(errs);
     }
     
-    const company = await Company.create(req.body);
+    const {company} = await Company.create(req.body);
     return res.status(201).json({ company });
   } catch (err) {
     return next(err);

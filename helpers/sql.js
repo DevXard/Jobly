@@ -27,46 +27,34 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 
 // Handle req.query and transform it in to DB Query and
 // array of values for parameterizing
-function getFilter(body){
-  const {name, min, max} = body;
-  let string = ''
+function getFilter(obj){
+  
+  const valueNames = Object.keys(obj)
   let arr = []
-  // if min and max exsist and min is higher then max 
-  //throw error
-  if(min !== undefined && max !== undefined && min > max) {
-    throw new BadRequestError('Minimum number of employees is higher then the Maximum')
-  }
-  //if name exsists create search parameter
-  if(name !== undefined){
-    string += ` name ILIKE $${arr.length + 1} `
-    arr.push(`%${name}%`)
-  }
-  //if min exsists create search parameter
-  if(min !== undefined){
-    // if array is greater then 0 there is a previous query
-    // and we are going to need AND
-    if(arr.length > 0){
-      string += 'AND '
+  valueNames.forEach((val, index) => {
+    if(val === "title" || val === "name" || val === "company_handle"){
+      arr.push(`${val} ILIKE $${index + 1}`)
     }
-    string += ` num_employees > $${arr.length + 1} `
-    arr.push(min)
-  }
-  //if max exsists create search parameter
-  if(max !== undefined){
-    // if array is greater then 0 there is a previous query
-    // and we are going to need AND
-    if(arr.length > 0){
-      string += 'AND '
+    if(val === "salary"){
+      arr.push(`${val} > $${index + 1}`)
     }
-    string += ` num_employees < $${arr.length + 1} `
-    arr.push(max)
-  }
-  //return a string fore WHERE part in DB query
-  // and array with all the values
-  return{
-    string,
-    arr
+    if(val === "equity"){
+      arr.push(`${val} >= $${index + 1}`)
+    }
+    if(val === "max"){
+      arr.push(`num_employees < $${index + 1}`)
+    }
+    if(val === "min"){
+      arr.push(`num_employees > $${index + 1}`)
+    }
+
+  })
+
+  return {
+    str: arr.join(" AND "),
+    values: Object.values(obj)
   }
 }
+
 
 module.exports = { sqlForPartialUpdate, getFilter };
